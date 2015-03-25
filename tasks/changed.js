@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var fs = require('fs');
 var path = require('path');
 
@@ -49,24 +50,11 @@ function createTask(grunt) {
 
     var originalConfig = grunt.config.get([taskName, targetName]);
     var config = grunt.util._.clone(originalConfig);
+    var changed = [].concat(config.changed || []);
+    var files = _.flatten(_.map(changed, function(pattern) {
+      return grunt.file.expand(pattern);
+    }));
 
-    /**
-     * Special handling for tasks that expect the `files` config to be a string
-     * or array of string source paths.
-     */
-    var srcFiles = true;
-    if (typeof config.files === 'string') {
-      config.src = [config.files];
-      delete config.files;
-      srcFiles = false;
-    } else if (Array.isArray(config.files) &&
-        typeof config.files[0] === 'string') {
-      config.src = config.files;
-      delete config.files;
-      srcFiles = false;
-    }
-
-    var files = grunt.task.normalizeMultiTaskFiles(config, targetName);
     util.filterFilesByHash(
         files,
         options.cache,
