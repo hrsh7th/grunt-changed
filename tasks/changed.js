@@ -26,75 +26,39 @@ function pluckConfig(id) {
 }
 
 function createTask(grunt) {
-  return function(taskName, targetName) {
-    var tasks = [];
-    var prefix = this.name;
-    if (!targetName) {
-      if (!grunt.config(taskName)) {
-        grunt.fatal('The "' + prefix + '" prefix is not supported for aliases');
-        return;
-      }
-      Object.keys(grunt.config(taskName)).forEach(function(targetName) {
-        if (!/^_|^options$/.test(targetName)) {
-          tasks.push(prefix + ':' + taskName + ':' + targetName);
-        }
-      });
-      return grunt.task.run(tasks);
+  return function() {
+    var done = this.async();
+
+    if (!(grunt.task.current && grunt.task.current.nameArgs)) {
+      return done(new Error('nameArgs is not found.'));
     }
-    var args = Array.prototype.slice.call(arguments, 2).join(':');
+
+    var name = grunt.task.current.nameArgs;
+    var taskName = name.replace(/:.*$/, '');
+    var targetName = name.replace(/^.*?:/, '');
     var options = this.options({
       cache: path.join(__dirname, '..', '.cache')
     });
 
-    var done = this.async();
-
-    var originalConfig = grunt.config.get([taskName, targetName]);
-    var config = grunt.util._.clone(originalConfig);
+    var config = grunt.config.get(targetName.split(':'));
     var changed = [].concat(config.changed || []);
-    var files = _.flatten(_.map(changed, function(pattern) {
-      return grunt.file.expand(pattern);
-    }));
+    var files = grunt.file.expand(changed);
 
     util.filterFilesByHash(
         files,
         options.cache,
         taskName,
         targetName,
-        function(e, changedFiles) {
-          if (e) {
-            return done(e);
-          } else if (changedFiles.length === 0) {
+        function(changedFiles) {
+          changedFiles = changedFiles || [];
+
+          if (changedFiles.length === 0) {
             grunt.log.writeln('No changed files to process.');
             return done();
           }
 
-          /**
-           * If we started out with only src files in the files config,
-           * transform the changedFiles array into an array of source files.
-           */
-          if (!srcFiles) {
-            changedFiles = changedFiles.map(function(obj) {
-              return obj.src;
-            });
-          }
-
-          // configure target with only changed files
-          config.files = changedFiles;
-          delete config.src;
-          delete config.dest;
-          grunt.config.set([taskName, targetName], config);
-
-          // because we modified the task config, cache the original
-          var id = cacheConfig(originalConfig);
-
-          // run the task, and attend to postrun tasks
-          var qualified = taskName + ':' + targetName;
-          var tasks = [
-            qualified + (args ? ':' + args : ''),
-            'changed-postrun:' + qualified + ':' + id
-          ];
-          grunt.task.run(tasks);
-
+          grunt.log.writeln('Changed files: ' + changedFiles.join(', '));
+          grunt.task.run(targetName);
           done();
         }
     );
@@ -110,35 +74,5 @@ module.exports = function(grunt) {
       'changed', 'Run a task with only those source files that have been ' +
       'modified since the last successful run.', createTask(grunt));
 
-  var internal = 'Internal task.';
-  grunt.registerTask(
-      'changed-postrun', internal, function(taskName, targetName, id) {
-        // reconfigure task with original config
-        grunt.config.set([taskName, targetName], pluckConfig(id));
-
-      });
-
-  var clean = 'Remove cached hashes.';
-  grunt.registerTask(
-      'changed-clean', clean, function(taskName, targetName) {
-        var done = this.async();
-
-        /**
-         * This intentionally only works with the default cache dir.  If a
-         * custom cache dir is provided, it is up to the user to keep it clean.
-         */
-        var cacheDir = path.join(__dirname, '..', '.cache');
-        if (taskName && targetName) {
-          cacheDir = path.join(cacheDir, taskName, targetName);
-        } else if (taskName) {
-          cacheDir = path.join(cacheDir, taskName);
-        }
-        if (grunt.file.exists(cacheDir)) {
-          grunt.log.writeln('Cleaning ' + cacheDir);
-          rimraf(cacheDir, done);
-        } else {
-          done();
-        }
-      });
-
 };
+
