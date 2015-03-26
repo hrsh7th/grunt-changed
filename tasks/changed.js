@@ -33,7 +33,7 @@ module.exports = function(grunt) {
   );
 
   function getNormalizedTasks(taskname) {
-    var config = grunt.config(taskname);
+    var config = grunt.config(taskname.split(':'));
 
     // multi task.
     var tasks = [];
