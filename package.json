@@ -1,46 +1,29 @@
 {
   "name": "grunt-changed",
   "description": "Run Grunt tasks with only those source files where the content changed to the last run.",
-  "version": "0.1.1",
-  "homepage": "https://github.com/researchgate/grunt-changed",
-  "author": {
-    "name": "Bastian Hofmann",
-    "url": "http://github.com/bashofmann/"
-  },
+  "version": "0.0.0",
+  "homepage": "https://github.com/hrsh7th/grunt-changed",
+  "author": "hrsh7th",
   "repository": {
     "type": "git",
-    "url": "git://github.com/researchgate/grunt-changed.git"
+    "url": "git://github.com/hrsh7th/grunt-changed.git"
   },
   "bugs": {
-    "url": "https://github.com/researchgate/grunt-changed/issues"
+    "url": "https://github.com/hrsh7th/grunt-changed/issues"
   },
   "licenses": [
     {
       "type": "MIT"
     }
   ],
-  "main": "gruntfile.js",
+  "main": "index.js",
   "engines": {
     "node": ">= 0.8.0"
   },
-  "scripts": {
-    "test": "grunt test",
-    "start": "grunt test watch"
-  },
   "devDependencies": {
-    "grunt": "0.4.5",
-    "grunt-cli": "0.1.13",
-    "grunt-contrib-watch": "0.6.1",
-    "grunt-contrib-jshint": "0.10.0",
-    "chai": "1.9.2",
-    "grunt-cafe-mocha": "0.1.13",
-    "wrench": "1.5.8",
-    "tmp": "0.0.24",
-    "grunt-contrib-clean": "0.6.0",
-    "mock-fs": "2.x"
-  },
-  "peerDependencies": {
-    "grunt": "~0.4.1"
+    "grunt-cli": "~0.1.13",
+    "grunt": "~0.4.5",
+    "grunt-contrib-copy": "~0.8.0"
   },
   "keywords": [
     "gruntplugin",
@@ -49,9 +32,8 @@
     "files"
   ],
   "dependencies": {
-    "async": "0.9.0",
-    "rimraf": "2.2.8",
+    "async": "~0.9.0",
     "mkdirp": "0.5.0",
-    "lodash": "~3.5.0"
+    "lodash": "~3.6.0"
   }
 }

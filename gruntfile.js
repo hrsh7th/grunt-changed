@@ -1,76 +1,33 @@
-var assert = require('assert');
-var path = require('path');
-var fs = require('fs');
-
-
-/**
- * @param {Object} grunt Grunt.
- */
 module.exports = function(grunt) {
-
-  var gruntfileSrc = 'gruntfile.js';
-  var tasksSrc = ['tasks/**/*.js', 'lib/**/*.js'];
-  var testSrc = 'test/**/*.spec.js';
-  var fixturesJs = 'test/integration/fixtures/**/*.js';
-  var fixturesAll = 'test/integration/fixtures/**/*';
+  'use strict';
 
   grunt.initConfig({
 
-    cafemocha: {
-      options: {
-        reporter: 'spec'
-      },
-      all: {
-        src: testSrc
-      }
-    },
 
-    jshint: {
-      options: {
-        jshintrc: true
+    copy: {
+      test1: {
+        changed: 'test/fixtures/test2/src/**',
+        files: [{
+          expand: true,
+          cwd: 'test/fixtures/test2/src',
+          src: '**',
+          dest: 'test/fixtures/test2/dest'
+        }]
       },
-      gruntfile: {
-        src: gruntfileSrc
-      },
-      tasks: {
-        src: tasksSrc
-      },
-      tests: {
-        src: testSrc
-      },
-      fixturesJs: {
-        src: fixturesJs
-      }
-    },
-
-    watch: {
-      tasks: {
-        files: tasksSrc,
-        tasks: ['cafemocha']
-      },
-      tests: {
-        files: testSrc,
-        tasks: ['changed:cafemocha']
-      },
-      fixturesAll: {
-        files: fixturesAll,
-        tasks: ['cafemocha']
-      },
-      allJs: {
-        files: [gruntfileSrc, tasksSrc, testSrc, fixturesJs],
-        tasks: ['changed:jshint']
-      }
-    }
+      test2: {
+        files: [{
+          expand: true,
+          cwd: 'test/fixtures/test2/src',
+          src: '**',  
+          dest: 'test/fixtures/test2/dest'
+        }]            
+      }               
+    }                 
 
   });
 
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadTasks('tasks');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-cafe-mocha');
-
-  grunt.registerTask('test', ['changed:jshint', 'cafemocha']);
-
-  grunt.registerTask('default', 'test');
 
 };
+
