@@ -6,12 +6,12 @@ module.exports = function(grunt) {
 
     copy: {
       test1: {
-        changed: 'test/fixtures/test2/src/**',
+        changed: 'test/fixtures/test1/src/**',
         files: [{
           expand: true,
-          cwd: 'test/fixtures/test2/src',
+          cwd: 'test/fixtures/test1/src',
           src: '**',
-          dest: 'test/fixtures/test2/dest'
+          dest: 'test/fixtures/test1/dest'
         }]
       },
       test2: {
@@ -20,9 +20,9 @@ module.exports = function(grunt) {
           cwd: 'test/fixtures/test2/src',
           src: '**',  
           dest: 'test/fixtures/test2/dest'
-        }]            
-      }               
-    }                 
+        }]
+      }
+    }
 
   });
 

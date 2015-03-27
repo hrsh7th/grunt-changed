@@ -18,6 +18,20 @@ module.exports = function(grunt) {
   );
 
   grunt.registerMultiTask(
+    'changed-clean',
+    'This is internal task. Clean changed file hashes.',
+    function() {
+      var done = this.async();
+      var options = this.options();
+
+      var cache = require('../lib/cache');
+      cache.clean(options.task, function() {
+        done();
+      });
+    }
+  );
+
+  grunt.registerMultiTask(
     'changed-save',
     'This is internal task. Save changed file hashes.',
     function() {
@@ -78,29 +92,43 @@ module.exports = function(grunt) {
         return done();
       }
 
-      var changed = grunt.file.expand({filter: grunt.file.isFile}, task.changed);
-      async.filter(changed, function(srcname, done) {
+      var targets = grunt.file.expand({filter: grunt.file.isFile}, task.changed);
+      async.filter(targets, function(srcname, done) {
         cache.isChanged(task.name, srcname, function(isChanged) {
           done(isChanged);
         });
       }, function(changed) {
         // not changed.
-        if (!changed.length) {
+        if (!changed.length && !cache.isTreeChanged(task.name, targets)) {
           grunt.log.writeln('>> Skip task: ' + task.name);
           return done();
-        }
 
         // changed.
-        var saveTaskname = ['changed-save', task.name.replace(':', '-')];
-        grunt.config.set(saveTaskname, {
-          options: {
-            task: task.name,
-            changed: changed
-          }
-        });
-        queue.push(task.name);
-        queue.push(saveTaskname.join(':'));
-        done();
+        } else {
+          // original task.
+          queue.push(task.name);
+
+          // clean hashes task.
+          var cleanTaskname = ['changed-clean', task.name.replace(':', '-')];
+          grunt.config.set(cleanTaskname, {
+            options: {
+              task: task.name
+            }
+          });
+          queue.push(cleanTaskname.join(':'));
+
+          // save hashes task.
+          var saveTaskname = ['changed-save', task.name.replace(':', '-')];
+          grunt.config.set(saveTaskname, {
+            options: {
+              task: task.name,
+              changed: targets
+            }
+          });
+          queue.push(saveTaskname.join(':'));
+
+          done();
+        }
       });
     }, function() {
       grunt.task.run(queue);
