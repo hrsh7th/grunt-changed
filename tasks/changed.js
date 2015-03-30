@@ -9,11 +9,15 @@ module.exports = function(grunt) {
     'changed',
     'Run a task with only those source files that have been ' + 'modified since the last successful run.',
     function() {
-      var tasks = getNormalizedTasks(grunt.task.current.args.join(':'));
-      var cache = require('../lib/cache').setCacheDir(this.options({
+      var options = this.options({
+        changed: ['Gruntfile.js'],
         cache: path.join(process.cwd(), '.grunt-changed-cache')
-      }).cache);
-      addTaskQueue(tasks, cache, this.async());
+      });
+      addTaskQueue(
+        getNormalizedTasks(grunt.task.current.args.join(':'), options.changed),
+        cache.setCacheDir(options.cache),
+        this.async()
+      );
     }
   );
 
@@ -24,7 +28,6 @@ module.exports = function(grunt) {
       var done = this.async();
       var options = this.options();
 
-      var cache = require('../lib/cache');
       cache.clean(options.task, function() {
         done();
       });
@@ -46,7 +49,7 @@ module.exports = function(grunt) {
     }
   );
 
-  function getNormalizedTasks(taskname) {
+  function getNormalizedTasks(taskname, changed) {
     var config = grunt.config(taskname.split(':'));
 
     // multi task.
@@ -54,13 +57,13 @@ module.exports = function(grunt) {
     for (var name in config) {
       tasks.push({
         name: [taskname, name].join(':'),
-        changed: config[name].changed,
+        changed: changed.concat(config[name].changed),
         isTarget: !!config[name].changed
       });
     }
 
     // return tasks if target in multi tasks.
-    var targets = _.filter(tasks, function(task) { return !!task.changed });
+    var targets = _.filter(tasks, function(task) { return task.isTarget; });
     if (targets.length) {
       return tasks;
     }
@@ -69,7 +72,7 @@ module.exports = function(grunt) {
     if (config.changed) {
       return [{
         name: taskname,
-        changed: config.changed,
+        changed: changed.concat(config.changed),
         isTarget: true
       }];
     }

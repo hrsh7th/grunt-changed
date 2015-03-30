@@ -22,6 +22,10 @@ module.exports = function(grunt) {
           dest: 'test/fixtures/test2/dest'
         }]
       }
+    },
+
+    changed: {
+      changed: 'Gruntfile.js'
     }
 
   });
